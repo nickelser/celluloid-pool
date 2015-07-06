@@ -31,7 +31,7 @@ module Celluloid
       end
 
       class Instance
-        attr_accessor :pool, :pool_size
+        attr_accessor :pool, :pool_size, :exit_handler
       end
 
       class << self
@@ -49,7 +49,7 @@ module Celluloid
         class << self
           def pooling_options(config={},mixins={})
             combined = { :type => Celluloid::Supervision::Container::Pool }.merge(config).merge(mixins)
-            combined[:args] = [[:block, :actors, :size, :args].inject({}) { |e,p| e[p] = combined.delete(p) if combined[p]; e }]
+            combined[:args] = [[:block, :actors, :size, :args, :exit_handler].inject({}) { |e,p| e[p] = combined.delete(p) if combined[p]; e }]
             combined
           end
         end
@@ -60,12 +60,13 @@ module Celluloid
           @supervisor = Container::Pool
           @method = "pool_link"
           @pool = true
-          @pool_size = @cofiguration[:size]
+          @pool_size = @configuration[:size]
+          @exit_handler = @configuration[:exit_handler]
           @configuration
         end
       end
 
-      
+
     end
   end
 end

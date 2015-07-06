@@ -21,6 +21,7 @@ module Celluloid
 
           @size = options[:size] || [Celluloid.cores || 2, 2].max
           @args = options[:args] ? Array(options[:args]) : []
+          @exit_handler = options[:exit_handler]
 
           # Do this last since it can suspend and/or crash
           @idle = @size.times.map { __spawn_actor__ }
@@ -121,7 +122,7 @@ module Celluloid
         def __busy
           @busy
         end
-        
+
         def __idle
           @idle
         end
@@ -166,6 +167,9 @@ module Celluloid
             @idle.delete actor
             @actors.delete actor
           }
+
+          @exit_handler.call(actor, reason) if @exit_handler
+
           return unless reason
 
           @idle << __spawn_actor__
